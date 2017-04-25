@@ -4,9 +4,10 @@ var sha1 = require('sha1')
 var Promise = require('bluebird')
 var request = Promise.promisify(require('request'))
 
-var prefix = 'https://api.weixin.qq.com/cgi-bin'
+// https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=APPID&secret=APPSECRET
+var prefix = 'https://api.weixin.qq.com/cgi-bin/'
 var api = {
-  accessToken: prefix + 'token?grant_type=client_credential&appid=APPID&secret=APPSECRET'
+  accessToken: prefix + 'token?grant_type=client_credential'
 }
 
 function Wechat(opts) {
@@ -22,13 +23,13 @@ function Wechat(opts) {
         data = Json.parse(data)
       }
       catch(e) {
-        return that.updateAccessToken(data)
+        return that.updateAccessToken()
       }
 
       if (that.isValidAccessToken(data)) {
         Promise.resove(data)
       } else {
-        return that.updateAccessToken(data)
+        return that.updateAccessToken()
       }
     })
     .then(function (data) {
@@ -40,7 +41,7 @@ function Wechat(opts) {
 }
 
 Wechat.prototype.isValidAccessToken = function (data) {
-  if (!data || data.access_token || !data.expires_in) {
+  if (!data || !data.access_token || !data.expires_in) {
     return false
   }
 
@@ -55,7 +56,7 @@ Wechat.prototype.isValidAccessToken = function (data) {
   }
 }
 
-Wechat.prototype.updatAccessToken = function (data) {
+Wechat.prototype.updateAccessToken = function (data) {
   var appId = this.appId
   var appSecret = this.appSecret
   var url = api.accessToken + '&appid=' + appId + '&secret=' + appSecret
@@ -75,6 +76,8 @@ Wechat.prototype.updatAccessToken = function (data) {
 }
 
 module.exports = function (opts) {
+  var wechat = new Wechat(opts)
+
   return function *(next) {
     console.log(this.query)
 

@@ -17,8 +17,10 @@ var config = {
     getAccessToken: function () {
       return util.readFileAsync(wechat_file)
     },
-    SaveAccessToken: function () {
-      return util.writeFileAsync(wechat_file)
+    SaveAccessToken: function (data) {
+      var data = JSON.stringify(data)
+
+      return util.writeFileAsync(wechat_file, data)
     }
   }
 }
